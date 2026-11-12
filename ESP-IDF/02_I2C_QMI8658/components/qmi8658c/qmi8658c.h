@@ -1,0 +1,393 @@
+#ifndef QMI8658C_H
+#define QMI8658C_H
+
+/* QMI8658C 六轴惯性传感器驱动配置。 */
+#define QMI8658_USE_SPI
+//#define QMI8658_SYNC_SAMPLE_MODE
+//#define QMI8658_SOFT_SELFTEST
+//#define QMI8658_USE_CALI
+
+/* 可选功能：当前启用 FIFO，运动检测和计步功能默认关闭。 */
+#define QMI8658_USE_FIFO
+//#define QMI8658_USE_AMD
+//#define QMI8658_USE_PEDOMETER
+
+/* 本板 QMI8658 使用的 7 位 I2C 从机地址。 */
+#define QMI8658_SLAVE_ADDR			0x6b
+
+/* CTRL7 传感器使能位。 */
+#define QMI8658_DISABLE_ALL				(0x0)
+#define QMI8658_ACC_ENABLE				(0x1)
+#define QMI8658_GYR_ENABLE				(0x2)
+#define QMI8658_ACCGYR_ENABLE			(QMI8658_ACC_ENABLE | QMI8658_GYR_ENABLE)
+
+#define QMI8658_STATUS1_CMD_DONE		(0x01)
+#define QMI8658_STATUS1_WAKEUP_EVENT	(0x04)
+
+/* CTRL8 嵌入式算法功能使能位。 */
+#define QMI8658_CTRL8_DATAVALID_EN		0x40		// bit6:1 int1, 0 int2
+#define QMI8658_CTRL8_PEDOMETER_EN		0x10
+#define QMI8658_CTRL8_SIGMOTION_EN		0x08
+#define QMI8658_CTRL8_NOMOTION_EN		0x04
+#define QMI8658_CTRL8_ANYMOTION_EN		0x02
+#define QMI8658_CTRL8_TAP_EN			0x01
+
+/* CTRL1 中断输出使能位。 */
+#define QMI8658_INT1_ENABLE				0x08
+#define QMI8658_INT2_ENABLE				0x10
+
+#define QMI8658_DRDY_DISABLE			0x20	// ctrl7
+
+#define QMI8658_FIFO_MAP_INT1			0x04	// ctrl1
+#define QMI8658_FIFO_MAP_INT2			~0x04	// ctrl1
+
+#define qmi8658_log		printf
+
+/* QMI8658C 主寄存器地址表。 */
+enum Qmi8658Register
+{
+	Qmi8658Register_WhoAmI = 0,
+	Qmi8658Register_Revision,
+	Qmi8658Register_Ctrl1,
+	Qmi8658Register_Ctrl2,
+	Qmi8658Register_Ctrl3,
+	Qmi8658Register_Ctrl4,
+	Qmi8658Register_Ctrl5,
+	Qmi8658Register_Ctrl6,
+	Qmi8658Register_Ctrl7,
+	Qmi8658Register_Ctrl8,
+	Qmi8658Register_Ctrl9,
+	Qmi8658Register_Cal1_L = 11,
+	Qmi8658Register_Cal1_H,
+	Qmi8658Register_Cal2_L,
+	Qmi8658Register_Cal2_H,
+	Qmi8658Register_Cal3_L,
+	Qmi8658Register_Cal3_H,
+	Qmi8658Register_Cal4_L,
+	Qmi8658Register_Cal4_H,
+	Qmi8658Register_FifoWmkTh = 19, 
+	Qmi8658Register_FifoCtrl = 20,
+	Qmi8658Register_FifoCount = 21,
+	Qmi8658Register_FifoStatus = 22,
+	Qmi8658Register_FifoData = 23,
+	Qmi8658Register_StatusI2CM = 44,
+	Qmi8658Register_StatusInt = 45,
+	Qmi8658Register_Status0,
+	Qmi8658Register_Status1,
+	Qmi8658Register_Timestamp_L = 48,
+	Qmi8658Register_Timestamp_M,
+	Qmi8658Register_Timestamp_H,
+	Qmi8658Register_Tempearture_L = 51,
+	Qmi8658Register_Tempearture_H,
+	Qmi8658Register_Ax_L = 53,
+	Qmi8658Register_Ax_H,
+	Qmi8658Register_Ay_L,
+	Qmi8658Register_Ay_H,
+	Qmi8658Register_Az_L,
+	Qmi8658Register_Az_H,
+	Qmi8658Register_Gx_L = 59,
+	Qmi8658Register_Gx_H,
+	Qmi8658Register_Gy_L,
+	Qmi8658Register_Gy_H,
+	Qmi8658Register_Gz_L,
+	Qmi8658Register_Gz_H,
+	Qmi8658Register_Mx_L = 65,
+	Qmi8658Register_Mx_H,
+	Qmi8658Register_My_L,
+	Qmi8658Register_My_H,
+	Qmi8658Register_Mz_L,
+	Qmi8658Register_Mz_H,
+	Qmi8658Register_firmware_id = 73,
+	Qmi8658Register_uuid = 81,
+
+	Qmi8658Register_Pedo_L = 90,
+	Qmi8658Register_Pedo_M = 91,
+	Qmi8658Register_Pedo_H = 92,
+		
+	Qmi8658Register_Reset = 96
+};
+
+/* OIS（光学防抖）接口寄存器地址表。 */
+enum qmi8658_Ois_Register
+{
+	qmi8658_OIS_Reg_Ctrl1 = 0x02,
+	qmi8658_OIS_Reg_Ctrl2,
+	qmi8658_OIS_Reg_Ctrl3,
+	qmi8658_OIS_Reg_Ctrl5	= 0x06,
+	qmi8658_OIS_Reg_Ctrl7   = 0x08,
+	qmi8658_OIS_Reg_StatusInt = 0x2D,
+	qmi8658_OIS_Reg_Status0   = 0x2E,
+	qmi8658_OIS_Reg_Ax_L  = 0x33,
+	qmi8658_OIS_Reg_Ax_H,
+	qmi8658_OIS_Reg_Ay_L,
+	qmi8658_OIS_Reg_Ay_H,
+	qmi8658_OIS_Reg_Az_L,
+	qmi8658_OIS_Reg_Az_H,
+
+	qmi8658_OIS_Reg_Gx_L  = 0x3B,
+	qmi8658_OIS_Reg_Gx_H,
+	qmi8658_OIS_Reg_Gy_L,
+	qmi8658_OIS_Reg_Gy_H,
+	qmi8658_OIS_Reg_Gz_L,
+	qmi8658_OIS_Reg_Gz_H,
+};
+
+/* 写入 CTRL9 的功能命令。 */
+enum qmi8658_Ctrl9Command
+{
+	qmi8658_Ctrl9_Cmd_NOP					= 0X00,
+	qmi8658_Ctrl9_Cmd_GyroBias				= 0X01,
+	qmi8658_Ctrl9_Cmd_Rqst_Sdi_Mod			= 0X03,
+	qmi8658_Ctrl9_Cmd_Rst_Fifo				= 0X04,
+	qmi8658_Ctrl9_Cmd_Req_Fifo				= 0X05,
+	qmi8658_Ctrl9_Cmd_I2CM_Write			= 0X06,
+	qmi8658_Ctrl9_Cmd_WoM_Setting			= 0x08,
+	qmi8658_Ctrl9_Cmd_AccelHostDeltaOffset	= 0x09,
+	qmi8658_Ctrl9_Cmd_GyroHostDeltaOffset	= 0x0A,
+	qmi8658_Ctrl9_Cmd_EnableExtReset		= 0x0B,
+	qmi8658_Ctrl9_Cmd_EnableTap				= 0x0C,	
+	qmi8658_Ctrl9_Cmd_EnablePedometer		= 0x0D,
+	qmi8658_Ctrl9_Cmd_Motion				= 0x0E,
+	qmi8658_Ctrl9_Cmd_CopyUsid				= 0x10,
+	qmi8658_Ctrl9_Cmd_SetRpu				= 0x11,
+	qmi8658_Ctrl9_Cmd_On_Demand_Cali		= 0xA2,
+	qmi8658_Ctrl9_Cmd_Dbg_WoM_Data_Enable	= 0xF8
+};
+
+
+/* 低通滤波器开关。 */
+enum qmi8658_LpfConfig
+{
+	Qmi8658Lpf_Disable,
+	Qmi8658Lpf_Enable
+};
+
+/* 高通滤波器开关。 */
+enum qmi8658_HpfConfig
+{
+	Qmi8658Hpf_Disable,
+	Qmi8658Hpf_Enable
+};
+
+/* 传感器自检开关。 */
+enum qmi8658_StConfig
+{
+	Qmi8658St_Disable,
+	Qmi8658St_Enable
+};
+
+/* 加速度计与陀螺仪的低通滤波模式。 */
+enum qmi8658_LpfMode
+{
+	A_LSP_MODE_0 = 0x00<<1,
+	A_LSP_MODE_1 = 0x01<<1,
+	A_LSP_MODE_2 = 0x02<<1,
+	A_LSP_MODE_3 = 0x03<<1,
+	
+	G_LSP_MODE_0 = 0x00<<5,
+	G_LSP_MODE_1 = 0x01<<5,
+	G_LSP_MODE_2 = 0x02<<5,
+	G_LSP_MODE_3 = 0x03<<5
+};
+
+/* 加速度计满量程配置。 */
+enum qmi8658_AccRange
+{
+	Qmi8658AccRange_2g = 0x00 << 4,
+	Qmi8658AccRange_4g = 0x01 << 4,
+	Qmi8658AccRange_8g = 0x02 << 4,
+	Qmi8658AccRange_16g = 0x03 << 4
+};
+
+
+/* 加速度计输出数据率配置。 */
+enum qmi8658_AccOdr
+{
+	Qmi8658AccOdr_8000Hz = 0x00,
+	Qmi8658AccOdr_4000Hz = 0x01,
+	Qmi8658AccOdr_2000Hz = 0x02,
+	Qmi8658AccOdr_1000Hz = 0x03,
+	Qmi8658AccOdr_500Hz = 0x04,
+	Qmi8658AccOdr_250Hz = 0x05,
+	Qmi8658AccOdr_125Hz = 0x06,
+	Qmi8658AccOdr_62_5Hz = 0x07,
+	Qmi8658AccOdr_31_25Hz = 0x08,
+	Qmi8658AccOdr_LowPower_128Hz = 0x0c,
+	Qmi8658AccOdr_LowPower_21Hz = 0x0d,
+	Qmi8658AccOdr_LowPower_11Hz = 0x0e,
+	Qmi8658AccOdr_LowPower_3Hz = 0x0f
+};
+
+/* 陀螺仪满量程配置，单位为度/秒（dps）。 */
+enum qmi8658_GyrRange
+{	
+	Qmi8658GyrRange_16dps = 0 << 4,
+	Qmi8658GyrRange_32dps = 1 << 4,
+	Qmi8658GyrRange_64dps = 2 << 4,
+	Qmi8658GyrRange_128dps = 3 << 4,
+	Qmi8658GyrRange_256dps = 4 << 4,
+	Qmi8658GyrRange_512dps = 5 << 4,
+	Qmi8658GyrRange_1024dps = 6 << 4,
+	Qmi8658GyrRange_2048dps = 7 << 4
+};
+
+/* 陀螺仪输出数据率配置。 */
+enum qmi8658_GyrOdr
+{
+	Qmi8658GyrOdr_8000Hz = 0x00,
+	Qmi8658GyrOdr_4000Hz = 0x01,
+	Qmi8658GyrOdr_2000Hz = 0x02,
+	Qmi8658GyrOdr_1000Hz = 0x03,
+	Qmi8658GyrOdr_500Hz	= 0x04,
+	Qmi8658GyrOdr_250Hz	= 0x05,
+	Qmi8658GyrOdr_125Hz	= 0x06,
+	Qmi8658GyrOdr_62_5Hz 	= 0x07,
+	Qmi8658GyrOdr_31_25Hz	= 0x08
+};
+
+/* 加速度输出单位。 */
+enum qmi8658_AccUnit
+{
+	Qmi8658AccUnit_g,
+	Qmi8658AccUnit_ms2
+};
+
+/* 角速度输出单位。 */
+enum qmi8658_GyrUnit
+{
+	Qmi8658GyrUnit_dps,
+	Qmi8658GyrUnit_rads
+};
+
+/* FIFO 工作模式。 */
+enum qmi8658_FifoMode
+{
+	qmi8658_Fifo_Bypass = 0,
+	qmi8658_Fifo_Fifo = 1,
+	qmi8658_Fifo_Stream = 2,	
+	qmi8658_Fifo_StreamToFifo = 3
+};
+
+
+/* FIFO 水位档位。 */
+enum qmi8658_FifoWmkLevel
+{
+	qmi8658_Fifo_WmkEmpty = 		(0 << 4),
+	qmi8658_Fifo_WmkOneQuarter =	(1 << 4),
+	qmi8658_Fifo_WmkHalf =			(2 << 4),
+	qmi8658_Fifo_WmkThreeQuarters =	(3 << 4)
+};
+
+/* FIFO 容量档位。 */
+enum qmi8658_FifoSize
+{
+	qmi8658_Fifo_16 = (0 << 2),
+	qmi8658_Fifo_32 = (1 << 2),
+	qmi8658_Fifo_64 = (2 << 2),
+	qmi8658_Fifo_128 = (3 << 2)
+};
+
+/* 可选的中断输出引脚。 */
+enum qmi8658_Interrupt
+{
+	qmi8658_Int_none,
+	qmi8658_Int1,
+	qmi8658_Int2,
+
+	qmi8658_Int_total
+};
+
+/* 中断有效电平。 */
+enum qmi8658_InterruptState
+{
+	Qmi8658State_high = (1 << 7),
+	Qmi8658State_low  = (0 << 7)
+};
+
+/* 软件校准需要累计的稳定样本数。 */
+#define QMI8658_CALI_DATA_NUM	200
+
+/* 软件校准过程中的历史值、累计值、零偏及状态标志。 */
+typedef struct qmi8658_cali
+{
+	float			acc_last[3];
+	float			acc[3];
+	float			acc_fix[3];
+	float			acc_bias[3];
+	float			acc_sum[3];
+
+	float			gyr_last[3];
+	float			gyr[3];
+	float			gyr_fix[3];
+	float			gyr_bias[3];    
+	float			gyr_sum[3];
+
+	unsigned char	imu_static_flag;
+	unsigned char	acc_fix_flag;	
+	unsigned char	gyr_fix_flag;
+	char			acc_fix_index;
+	unsigned char	gyr_fix_index;
+
+	unsigned char	acc_cali_flag;
+	unsigned char	gyr_cali_flag;
+	unsigned short	acc_cali_num;
+	unsigned short	gyr_cali_num;
+//    unsigned char	acc_avg_num;
+//    unsigned char	gyr_avg_num;
+} qmi8658_cali;
+
+/* 当前传感器量程、输出数据率及可选功能配置。 */
+typedef struct
+{
+	unsigned char			enSensors;
+	enum qmi8658_AccRange	accRange;
+	enum qmi8658_AccOdr		accOdr;
+	enum qmi8658_GyrRange	gyrRange;
+	enum qmi8658_GyrOdr		gyrOdr;
+	unsigned char			ctrl8_value;
+#if defined(QMI8658_USE_FIFO)
+	unsigned char			fifo_ctrl;
+#endif
+} qmi8658_config;
+
+/* 驱动全局运行状态和最近一次有效的六轴数据。 */
+typedef struct
+{
+	unsigned char	slave;
+	qmi8658_config	cfg;
+	unsigned short	ssvt_a;
+	unsigned short	ssvt_g;
+	unsigned int	timestamp;
+	unsigned int	step;
+	float			imu[6];
+} qmi8658_state;
+
+/* 基础寄存器访问及驱动初始化接口。 */
+extern unsigned char qmi8658_write_reg(unsigned char reg, unsigned char value);
+extern unsigned char qmi8658_read_reg(unsigned char reg, unsigned char* buf, unsigned short len);
+extern unsigned char qmi8658_init(void);
+extern void qmi8658_config_reg(unsigned char low_power);
+extern void qmi8658_enableSensors(unsigned char enableFlags);
+extern unsigned char qmi8658_readStatusInt(void);
+extern unsigned char qmi8658_readStatus0(void);
+extern unsigned char qmi8658_readStatus1(void);
+extern float qmi8658_readTemp(void);
+extern void qmi8658_read_timestamp(unsigned int *tim_count);
+extern void qmi8658_read_xyz(float acc[3], float gyro[3]);
+extern void qmi8658_read_sensor_data(float acc[3], float gyro[3]);
+#if defined(QMI8658_USE_PEDOMETER)
+extern unsigned int qmi8658_read_pedometer(void);
+#endif
+#if defined(QMI8658_USE_AMD)
+void qmi8658_config_amd(void);
+void qmi8658_enable_amd(unsigned char enable, enum qmi8658_Interrupt int_map, unsigned char low_power);
+#endif
+#if defined(QMI8658_USE_FIFO)
+extern void qmi8658_config_fifo(unsigned char watermark,enum qmi8658_FifoSize size,enum qmi8658_FifoMode mode,enum qmi8658_Interrupt int_map);
+extern unsigned short qmi8658_read_fifo(unsigned char* data);
+#endif
+extern void qmi8658_send_ctl9cmd(enum qmi8658_Ctrl9Command cmd);
+
+/* 示例任务：周期读取并打印六轴数据和温度。 */
+void qmi8658c_example(void* parmeter);
+#endif

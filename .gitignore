@@ -1,0 +1,9 @@
+.git_backup/
+build/
+build_stale*/
+build_partial*/
+build_diag/
+.pio/
+__pycache__/
+*.pyc
+sdkconfig.old

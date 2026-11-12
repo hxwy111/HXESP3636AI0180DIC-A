@@ -1,0 +1,4 @@
+# ESP-IDF Component Manager dependencies
+version: "1.0.0"
+dependencies:
+  lvgl/lvgl: "^8.3.11"
